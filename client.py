@@ -5,7 +5,18 @@ import socket
 import struct
 import time
 import picamera
+import RPi.GPIO as GPIO
 
+def relay(delay):
+  GPIO.output(18, GPIO.HIGH)
+  time.sleep(delay)
+  GPIO.output(18, GPIO.LOW)
+
+# Set up GPIO for LED/Relay
+GPIO.setmode(GPIO.BCM)
+GPIO.setwarnings(False)
+GPIO.setup(18, GPIO.OUT)
+# Get hostname from command line arguement
 server_hostname = sys.argv[1]
 server_port = 8000
 # Connect a client socket to hostname:8000 (your server)
