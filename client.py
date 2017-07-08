@@ -17,16 +17,13 @@ def relay(delay):
 def result(connection, connection_lock):
     print(':::: Inside Result ::::') 
     # Receive and process the result
-    while True:
+    if True:
         with connection_lock:
             result_len = struct.unpack('<L', connection.read(struct.calcsize('<L')))[0]
-            if not result_len:
-                continue
-            result_stream = io.BytesIO()
-            result_stream.write(connection.read(result_len))
-            result_stream.seek(0)
-            result_object = pickle.loads(result_stream)
-            print('RESULT FROM THE SERVER ::::  ', result_object)
+#            if not result_len:
+#                continue
+            result_stream = connection.read(result_len)
+            print('RESULT FROM THE SERVER ::::  ', result_stream)
 
 # Set up GPIO for LED/Relay
 GPIO.setmode(GPIO.BCM)
