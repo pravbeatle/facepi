@@ -28,8 +28,7 @@ def result(connection, no_of_pics):
     print(':::: Inside Result ::::')
     # Receive and process the result
     p = re.compile(r'\d+\.\d+')
-    i = 0
-    while i < no_of_pics:
+    while True:
         if connection is not None:
             result_len = struct.unpack('<L', connection.read(struct.calcsize('<L')))[0]
             if not result_len:
@@ -40,7 +39,6 @@ def result(connection, no_of_pics):
 	        if float(prediction) >= 0.90:
                     relay(2)
  		print(prediction)
-		i += 1
 		break
 
 # Set up GPIO for LED/Relay
@@ -56,8 +54,6 @@ client_socket.connect((server_hostname, server_port))
 pir = MotionSensor(getattr(args, 'ms_port') or 17)
 # Make a file-like object out of the connection
 connection = client_socket.makefile('wb')
-# Create a thread for receiving the result
-thread = Thread(target=result, args=(connection, 1))
 try:
     while True:
         print('in while')
@@ -81,6 +77,7 @@ try:
                     connection.write(struct.pack('<L', stream.tell()))
                     connection.flush()
                     # Start thread to receive result for this image
+		    thread = Thread(target=result, args=(connection))
                     thread.start()
                     # Rewind the stream and send the image data over the wire
                     stream.seek(0)
