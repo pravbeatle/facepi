@@ -24,11 +24,12 @@ def relay(delay):
     time.sleep(delay)
     GPIO.output(output_port, GPIO.LOW)
 
-def result(connection):
+def result(connection, no_of_pics):
     print(':::: Inside Result ::::') 
     # Receive and process the result
     p = re.compile(r'\d+\.\d+')
-    while True:
+    i = 0
+    while i < no_of_pics:
         if connection is not None:
             result_len = struct.unpack('<L', connection.read(struct.calcsize('<L')))[0]
             if not result_len:
@@ -39,7 +40,8 @@ def result(connection):
 	        if float(prediction) >= 0.90:
                     relay(2)
  		print(prediction)
-	    break
+		i += 1
+	   
 
 # Set up GPIO for LED/Relay
 GPIO.setmode(GPIO.BCM)
@@ -55,7 +57,7 @@ pir = MotionSensor(getattr(args, 'ms_port') or 17)
 # Make a file-like object out of the connection
 connection = client_socket.makefile('wb')
 # Create a thread for receiving the result
-thread = Thread(target=result, args=(connection))
+thread = Thread(target=result, args=(connection, 1))
 try:
     with picamera.PiCamera() as camera:
         camera.hflip = True
@@ -92,6 +94,8 @@ try:
 	    print('sending 0 to the connection!')
 	    thread.join()
             connection.write(struct.pack('<L', 0))
+	    camera.stop_preview()
+	    print('stopping camera')
 finally:
     print('in finally')
     connection.close()
