@@ -41,7 +41,7 @@ def result(connection, no_of_pics):
                     relay(2)
  		print(prediction)
 		i += 1
-
+		break
 
 # Set up GPIO for LED/Relay
 GPIO.setmode(GPIO.BCM)
@@ -67,8 +67,6 @@ try:
                 camera.hflip = True
                 camera.vflip = True
                 camera.resolution = (640, 460)
-                # Start the thread listenning for results
-                thread.start()
                 # Start the camera and let it stabilize for 2 seconds
                 time.sleep(2)
 
@@ -82,6 +80,8 @@ try:
                     # ensure it was actually sent.
                     connection.write(struct.pack('<L', stream.tell()))
                     connection.flush()
+		    # Start thread to receive result for this image
+		    thread.start()
                     # Rewind the stream and send the image data over the wire
                     stream.seek(0)
                     connection.write(stream.read())
@@ -93,10 +93,8 @@ try:
                     stream.truncate()
         	    # Write a length of 0 to the stream to signal that we are done
                 print('sending 0 to the connection!')
-        	    thread.join()
                 connection.write(struct.pack('<L', 0))
                 print('stopping camera')
-                camera.close()
 finally:
     print('in finally')
     connection.close()
