@@ -6,7 +6,7 @@ import struct
 import time
 import picamera
 import RPi.GPIO as GPIO
-from threading import Thread, Lock
+from threading import Thread
 import re
 import argparse
 
@@ -17,14 +17,14 @@ parser.add_argument('-ms_port', type=int, help='motion sensor input port')
 parser.add_argument('-relay_port', type=int, help='relay switch input port')
 args = parser.parse_args()
 # Set relay port
-output_port = getattr(args, 'relay_port', 25)
+output_port = getattr(args, 'relay_port') or 25
 
 def relay(delay):
     GPIO.output(output_port, GPIO.HIGH)
     time.sleep(delay)
     GPIO.output(output_port, GPIO.LOW)
 
-def result(connection, connection_lock):
+def result(connection):
     print(':::: Inside Result ::::') 
     # Receive and process the result
     p = re.compile(r'\d+\.\d+')
@@ -36,9 +36,10 @@ def result(connection, connection_lock):
             result_stream = connection.read(result_len)
             print('RESULT FROM THE SERVER ::::  ', result_stream)
             for prediction in p.findall(result_stream.split('===\n')[1]):
-	        if float(prediction) >= 0.65:
+	        if float(prediction) >= 0.90:
                     relay(2)
  		print(prediction)
+	    break
 
 # Set up GPIO for LED/Relay
 GPIO.setmode(GPIO.BCM)
@@ -46,19 +47,15 @@ GPIO.setwarnings(False)
 GPIO.setup(output_port, GPIO.OUT)
 # Get hostname from command line arguement
 server_hostname = args.ip
-server_port = getattr(args, 'server_port', 8000)
+server_port = getattr(args, 'server_port') or 8000
 # Connect a client socket to hostname:8000 (your server)
 client_socket = socket.socket()
 client_socket.connect((server_hostname, server_port))
-pir = MotionSensor(getattr(args, 'ms_port', 17))
+pir = MotionSensor(getattr(args, 'ms_port') or 17)
 # Make a file-like object out of the connection
 connection = client_socket.makefile('wb')
-connection_lock = Lock()
 # Create a thread for receiving the result
-print('before thread start')
-thread = Thread(target=result, args=(connection, connection_lock))
-thread.start()
-print('after thread start')
+thread = Thread(target=result, args=(connection))
 try:
     with picamera.PiCamera() as camera:
         camera.hflip = True
@@ -67,6 +64,8 @@ try:
         print('before motion detection')
         if pir.motion_detected:
             print('motion detected')
+	    # Start the thread listenning for results
+	    thread.start()
             # Start the camera and let it stabilize for 2 seconds
             time.sleep(2)
 
@@ -90,6 +89,8 @@ try:
                 stream.seek(0)
                 stream.truncate()
 	    # Write a length of 0 to the stream to signal that we are done
+	    print('sending 0 to the connection!')
+	    thread.join()
             connection.write(struct.pack('<L', 0))
 finally:
     print('in finally')
