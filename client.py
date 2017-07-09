@@ -28,8 +28,7 @@ def result(connection):
     print(':::: Inside Result ::::')
     # Receive and process the result
     p = re.compile(r'\d+\.\d+')
-    r = True
-    while r:
+    while True:
         if connection is not None:
             result_len = struct.unpack('<L', connection.read(struct.calcsize('<L')))[0]
             if not result_len:
@@ -40,7 +39,6 @@ def result(connection):
                 if float(prediction) >= 0.90:
                     relay(2)
                 print(prediction)
-                r = False
 
 # Set up GPIO for LED/Relay
 GPIO.setmode(GPIO.BCM)
@@ -52,9 +50,13 @@ server_port = getattr(args, 'server_port') or 8000
 # Connect a client socket to hostname:8000 (your server)
 client_socket = socket.socket()
 client_socket.connect((server_hostname, server_port))
+# Create motion sensor and accept input on port
 pir = MotionSensor(getattr(args, 'ms_port') or 17)
 # Make a file-like object out of the connection
 connection = client_socket.makefile('wb')
+# Create thread for listening to result from the server
+thread = Thread(target=result, args=(connection))
+thread.start()
 try:
     while True:
         print('in while')
@@ -77,9 +79,6 @@ try:
                     # ensure it was actually sent.
                     connection.write(struct.pack('<L', stream.tell()))
                     connection.flush()
-                    # Start thread to receive result for this image
-                    thread = Thread(target=result, args=(connection))
-                    thread.start()
                     # Rewind the stream and send the image data over the wire
                     stream.seek(0)
                     connection.write(stream.read())
