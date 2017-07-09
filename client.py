@@ -37,7 +37,7 @@ def result(connection):
             print('RESULT FROM THE SERVER ::::  ', result_stream)
             for prediction in p.findall(result_stream.split('===\n')[1]):
                 if float(prediction) >= 0.90:
-                    relay(2)
+                    relay(10)
                 print(prediction)
 
 # Set up GPIO for LED/Relay
@@ -58,7 +58,9 @@ connection = client_socket.makefile('wb')
 thread = Thread(target=result, args=(connection))
 thread.start()
 try:
-    while True:
+    i = 0
+    while i<2:
+        i += 1
         print('in while')
         if pir.motion_detected:
             print('Motion Detected!')
