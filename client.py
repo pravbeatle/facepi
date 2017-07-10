@@ -1,3 +1,4 @@
+
 from gpiozero import MotionSensor
 import sys
 import io
@@ -24,7 +25,7 @@ def relay(delay):
     time.sleep(delay)
     GPIO.output(output_port, GPIO.LOW)
 
-def result(connection):
+def result():
     print(':::: Inside Result ::::')
     # Receive and process the result
     p = re.compile(r'\d+\.\d+')
@@ -37,8 +38,8 @@ def result(connection):
                 result_stream = connection.read(result_len)
                 print('RESULT FROM THE SERVER ::::  ', result_stream)
                 for prediction in p.findall(result_stream.split('===\n')[1]):
-                    if float(prediction) >= 0.90:
-                        relay(10)
+                    if float(prediction) >= 0.80:
+                        relay(1)
                     print(prediction)
     finally:
         print('result finally')
@@ -58,22 +59,21 @@ pir = MotionSensor(getattr(args, 'ms_port') or 17)
 # Make a file-like object out of the connection
 connection = client_socket.makefile('wb')
 # Create thread for listening to result from the server
-thread = Thread(target=result, args=(connection))
-thread.start()
+thread = Thread(target=result, args=())
+thread.daemon = True
 try:
     i = 0
-    while i<2:
+    while True:
         i += 1
-        print('in while')
-        if pir.motion_detected:
+        if pir.motion_detected and i < 2:
             print('Motion Detected!')
             with picamera.PiCamera() as camera:
                 camera.hflip = True
                 camera.vflip = True
                 camera.resolution = (640, 460)
                 # Start the camera and let it stabilize for 2 seconds
-                time.sleep(2)
-
+		thread.start()
+		time.sleep(2)
                 # Note the start time and construct a stream to hold image data temporarily
                 # (instead of direcrly writing to the connection, we first find out the size)
                 start = time.time()
