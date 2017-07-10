@@ -39,7 +39,7 @@ def result():
                 print('RESULT FROM THE SERVER ::::  ', result_stream)
                 for prediction in p.findall(result_stream.split('===\n')[1]):
                     if float(prediction) >= 0.80:
-                        relay(1)
+                        relay(5)
                     print(prediction)
     finally:
         print('result finally')
@@ -62,17 +62,17 @@ connection = client_socket.makefile('wb')
 thread = Thread(target=result, args=())
 thread.daemon = True
 try:
-    i = 0
+    # Thread start listening for eternity
+    thread.start()
     while True:
         i += 1
-        if pir.motion_detected and i < 2:
+        if pir.motion_detected:
             print('Motion Detected!')
             with picamera.PiCamera() as camera:
                 camera.hflip = True
                 camera.vflip = True
                 camera.resolution = (640, 460)
                 # Start the camera and let it stabilize for 2 seconds
-		thread.start()
 		time.sleep(2)
                 # Note the start time and construct a stream to hold image data temporarily
                 # (instead of direcrly writing to the connection, we first find out the size)
@@ -97,6 +97,7 @@ try:
                 print('sending 0 to the connection!')
                 connection.write(struct.pack('<L', 0))
                 print('stopping camera')
+		time.sleep(20)
 finally:
     print('in finally')
     connection.close()
