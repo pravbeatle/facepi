@@ -26,7 +26,7 @@ Pass it to the classifier script like this:<br />
 ./lib/openface/demos/classifier.py infer ./generated-embeddings/classifier.pkl your_test_image.jpg<br />
 
 You should get a prediction that looks like this:<br />
-=== /test-images/will-ferrel-1.jpg === <br />
+=== /test-images/bill-gates-1.jpg === <br />
 Predict bill-gates with 0.73 confidence. <br />
 
 From here it's up to you to adapt the ./demos/classifier.py python script to work however you want.
