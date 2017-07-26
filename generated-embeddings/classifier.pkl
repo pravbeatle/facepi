@@ -198,7 +198,7 @@ Rp80
 tp81
 g69
 I00
-S'\t\xc0%$\x94\x08\x0b\xc0'
+S'.\xd8\xb1\xff\x10\xc8\n\xc0'
 p82
 tp83
 bsS'_sparse'
@@ -335,7 +335,7 @@ Rp134
 tp135
 g69
 I00
-S"a'\x08-Q\x1c\xc3\xbf"
+S'\xb5X\xb17\x8b@\xc2\xbf'
 p136
 tp137
 bsS'cache_size'
