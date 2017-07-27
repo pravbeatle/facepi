@@ -1,11 +1,12 @@
-from gpio import MotionSensor
+from gpiozero import MotionSensor
+import sys
 import io
 import socket
 import struct
 import time
 import picamera
 
-server_hostname = ''
+server_hostname = sys.argv[1]
 server_port = 8000
 # Connect a client socket to hostname:8000 (your server)
 client_socket = socket.socket()
@@ -26,7 +27,7 @@ try:
             # (instead of direcrly writing to the connection, we first find out the size)
             start = time.time()
             stream = io.BytesIO()
-            for c in camera.capture_continious(stream, 'jpeg'):
+            for c in camera.capture_continuous(stream, 'jpeg'):
                 # Write the length of the capture to the stream and flush to
                 # ensure it was actually sent.
                 connection.write(struct.pack('<L', stream.tell()))
