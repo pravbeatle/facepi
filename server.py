@@ -2,12 +2,13 @@ import io
 import socket
 import struct
 from PIL import Image
+from datetime import datetime
 
 # Start the server and start listenning on port 8000
 server_socket = socket.socket()
 server_socket.bind(('0.0.0.0', 8000))
 server_socket.listen(0)
-
+print('Listenning for the client...')
 # Accept a single connection and make a file like object out of it
 connection = server_socket.accept()[0].makefile('rb')
 try:
@@ -26,7 +27,9 @@ try:
         print('Image is %d%d' % image.size)
         image.verify()
         print('Image is verified')
-        
+        image = Image.open(image_stream)
+        filename = datetime.now().strftime("%Y-%m-%d_%H.%M.%S.jpeg")
+        image.save('temp/' + filename)
         ## Process the image
 finally:
     connection.close()
