@@ -43,7 +43,6 @@ try:
                 stream.truncate()
             # Write a length of 0 to the stream to signal that we are done
             connection.write(struct.pack('<L', 0))
-        time.sleep(30)
 finally:
     connection.close()
     client_socket.close()

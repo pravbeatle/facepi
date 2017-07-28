@@ -3,6 +3,7 @@ import socket
 import struct
 from PIL import Image
 from datetime import datetime
+import subprocess
 
 # Start the server and start listenning on port 8000
 server_socket = socket.socket()
@@ -14,10 +15,10 @@ connection = server_socket.accept()[0].makefile('rb')
 try:
     while True:
         # Read the length of the image as a 32-bit unsigned int
-        # If the length is 0, then quit the loop
+        # If the length is 0, then keep looping
         image_len = struct.unpack('<L', connection.read(struct.calcsize('<L')))[0]
         if not image_len:
-            break
+            continue
         # Construct a stream to hold the image data and read the image data from the connection
         image_stream = io.BytesIO()
         image_stream.write(connection.read(image_len))
@@ -31,6 +32,11 @@ try:
         filename = datetime.now().strftime("%Y-%m-%d_%H.%M.%S.jpeg")
         image.save('temp/' + filename)
         ## Process the image
+        result = subprocess.Popen("./lib/openface/demos/classifier.py infer {} ./generated-embeddings/classifier.pkl ./temp/{}".format("--multi", filename), shell=True)
+        print(':::: PRINTINT RESULT ::::')
+        print(result)
+        # Send result back to client
+        
 finally:
     connection.close()
     server_socket.close()
