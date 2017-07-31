@@ -6,11 +6,24 @@ import struct
 import time
 import picamera
 import RPi.GPIO as GPIO
+import pickle
 
 def relay(delay):
   GPIO.output(18, GPIO.HIGH)
   time.sleep(delay)
   GPIO.output(18, GPIO.LOW)
+
+def result():
+    # Receive and process the result
+    while True:
+        result_len = struct.unpack('<L', connection.read(struct.calcsize('<L')))[0]
+        if not result_len
+            continue
+        result_stream = io.BytesIO()
+        result_stream.write(connection.read(result_len))
+        result_stream.seek(0)
+        result = pickle.loads(result_stream)
+        print('RESULT FROM THE SERVER ::::  ', result)
 
 # Set up GPIO for LED/Relay
 GPIO.setmode(GPIO.BCM)
@@ -25,6 +38,9 @@ client_socket.connect((server_hostname, server_port))
 pir = MotionSensor(6)
 # Make a file-like object out of the connection
 connection = client_socket.makefile('wb')
+# Create a thread for receiving the result
+thread = Thread(target=result)
+thread.start()
 try:
     with picamera.PiCamera() as camera:
         camera.hflip = True
@@ -57,3 +73,4 @@ try:
 finally:
     connection.close()
     client_socket.close()
+    thread.stop()
