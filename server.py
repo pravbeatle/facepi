@@ -12,7 +12,7 @@ server_socket.bind(('0.0.0.0', 8000))
 server_socket.listen(0)
 print('Listenning for the client...')
 # Accept a single connection and make a file like object out of it
-connection = server_socket.accept()[0].makefile('rb')
+connection = server_socket.accept()[0].makefile('wb')
 try:
     while True:
         # Read the length of the image as a 32-bit unsigned int
@@ -34,11 +34,12 @@ try:
         filename = datetime.now().strftime("%Y-%m-%d_%H.%M.%S.jpeg")
         image.save('temp/' + filename)
         ## Process the image
-        result = subprocess.Popen("./lib/openface/demos/classifier.py infer {} ./generated-embeddings/classifier.pkl ./temp/{}".format("--multi", filename), shell=True)
-        print(':::: PRINTINT RESULT ::::')
-        print(result)
+        result = subprocess.Popen("./lib/openface/demos/classifier.py infer {} ./generated-embeddings/classifier.pkl ./temp/{}".format("--multi", filename), stdout=subprocess.PIPE, shell=True)
+        result_output = result.communicate()[0]
+        print(':::: PRINTINT RESULT ::::', result_output)
         # Create result stream and write its length to connection
-        result_stream = io.BytesIO(pickle.dumps(result))
+        print('PICKLE DUMP :::: ', pickle.dumps(result_output))
+        result_stream = io.BytesIO(pickle.dumps(result_output))
         connection.write(struct.pack('<L', result_stream.tell()))
         connection.flush()
         # Rewind the stream and write its contents to the connection
