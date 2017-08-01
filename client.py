@@ -7,25 +7,26 @@ import time
 import picamera
 import RPi.GPIO as GPIO
 import pickle
-from threading import Thread
+from threading import Thread, Lock
 
 def relay(delay):
     GPIO.output(18, GPIO.HIGH)
     time.sleep(delay)
     GPIO.output(18, GPIO.LOW)
 
-def result(connection):
-    print(':::: Inside Result ::::')
+def result(connection, connection_lock):
+    print(':::: Inside Result ::::') 
     # Receive and process the result
     while True:
-        result_len = struct.unpack('<L', connection.read(struct.calcsize('<L')))[0]
-        if not result_len:
-            continue
-        result_stream = io.BytesIO()
-        result_stream.write(connection.read(result_len))
-        result_stream.seek(0)
-        result_object = pickle.loads(result_stream)
-        print('RESULT FROM THE SERVER ::::  ', result_object)
+        with connection_lock:
+            result_len = struct.unpack('<L', connection.read(struct.calcsize('<L')))[0]
+            if not result_len:
+                continue
+            result_stream = io.BytesIO()
+            result_stream.write(connection.read(result_len))
+            result_stream.seek(0)
+            result_object = pickle.loads(result_stream)
+            print('RESULT FROM THE SERVER ::::  ', result_object)
 
 # Set up GPIO for LED/Relay
 GPIO.setmode(GPIO.BCM)
@@ -40,10 +41,10 @@ client_socket.connect((server_hostname, server_port))
 pir = MotionSensor(17)
 # Make a file-like object out of the connection
 connection = client_socket.makefile('wb')
+connection_lock = Lock()
 # Create a thread for receiving the result
 print('before thread start')
-print('connection :::: ', connection)
-thread = Thread(target=result, args=(connection))
+thread = Thread(target=result, args=(connection, connection_lock))
 thread.start()
 print('after thread start')
 try:
@@ -76,7 +77,7 @@ try:
                 # Reset the stream for next capture
                 stream.seek(0)
                 stream.truncate()
-            # Write a length of 0 to the stream to signal that we are done
+	    # Write a length of 0 to the stream to signal that we are done
             connection.write(struct.pack('<L', 0))
 finally:
     print('in finally')
