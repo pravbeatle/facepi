@@ -4,7 +4,6 @@ import struct
 from PIL import Image
 from datetime import datetime
 import subprocess
-import pickle
 
 # Start the server and start listenning on port 8000
 server_socket = socket.socket()
@@ -38,17 +37,11 @@ try:
         result_output = result.communicate()[0]
         print(':::: PRINTINT RESULT ::::', result_output)
         # Create result stream and write its length to connection
-        print('PICKLE DUMP :::: ', pickle.dumps(result_output))
-        result_stream = io.BytesIO(pickle.dumps(result_output))
-        connection.write(struct.pack('<L', result_stream.tell()))
+        connection.write(struct.pack('<L', len(result_output)))
         connection.flush()
         # Rewind the stream and write its contents to the connection
-        result_stream.seek(0)
-        connection.write(result_stream.read())
-        # Clear the stream
-        result_stream.seek(0)
-        result_stream.truncate()
-
+        connection.write(result_output)
+        connection.flush()
 finally:
     connection.close()
     server_socket.close()
