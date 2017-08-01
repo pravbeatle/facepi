@@ -18,14 +18,14 @@ def result(connection):
     print(':::: Inside Result ::::')
     # Receive and process the result
     while True:
-      result_len = struct.unpack('<L', connection.read(struct.calcsize('<L')))[0]
-      if not result_len:
-        continue
-      result_stream = io.BytesIO()
-      result_stream.write(connection.read(result_len))
-      result_stream.seek(0)
-      result_object = pickle.loads(result_stream)
-      print('RESULT FROM THE SERVER ::::  ', result_object)
+        result_len = struct.unpack('<L', connection.read(struct.calcsize('<L')))[0]
+        if not result_len:
+            continue
+        result_stream = io.BytesIO()
+        result_stream.write(connection.read(result_len))
+        result_stream.seek(0)
+        result_object = pickle.loads(result_stream)
+        print('RESULT FROM THE SERVER ::::  ', result_object)
 
 # Set up GPIO for LED/Relay
 GPIO.setmode(GPIO.BCM)
@@ -82,4 +82,3 @@ finally:
     print('in finally')
     connection.close()
     client_socket.close()
-
