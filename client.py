@@ -80,8 +80,8 @@ try:
                     # ensure it was actually sent.
                     connection.write(struct.pack('<L', stream.tell()))
                     connection.flush()
-		    # Start thread to receive result for this image
-		    thread.start()
+                    # Start thread to receive result for this image
+                    thread.start()
                     # Rewind the stream and send the image data over the wire
                     stream.seek(0)
                     connection.write(stream.read())
