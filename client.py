@@ -94,9 +94,9 @@ try:
         	    # Write a length of 0 to the stream to signal that we are done
         	    print('sending 0 to the connection!')
         	    thread.join()
-                    connection.write(struct.pack('<L', 0))
+                connection.write(struct.pack('<L', 0))
         	    print('stopping camera')
-		    camera.close()
+                camera.close()
 finally:
     print('in finally')
     connection.close()
