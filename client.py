@@ -39,7 +39,7 @@ def result(connection):
             for prediction in p.findall(result_stream.split('===\n')[1]):
                 if float(prediction) >= 0.90:
                     relay(2)
- 		    print(prediction)
+                print(prediction)
                 r = False
 
 # Set up GPIO for LED/Relay
