@@ -4,10 +4,16 @@ import struct
 from PIL import Image
 from datetime import datetime
 import subprocess
+import argparse
+
+parser = argparse.ArgumentParser()
+parser.add_argument('-server_port', type=int, help='server port to connect the socket to')
+args = parser.parse_args()
 
 # Start the server and start listenning on port 8000
 server_socket = socket.socket()
-server_socket.bind(('0.0.0.0', 8000))
+port = getattr(args, 'server_port')
+server_socket.bind(('0.0.0.0', port or 8000))
 server_socket.listen(0)
 print('Listenning for the client...')
 # Accept a single connection and make a file like object out of it
