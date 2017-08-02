@@ -60,9 +60,9 @@ connection = client_socket.makefile('wb')
 thread = Thread(target=result, args=(connection, 1))
 try:
     while True:
-	print('in while')
+        print('in while')
         if pir.motion_detected:
-	    print('Motion Detected!')
+            print('Motion Detected!')
             with picamera.PiCamera() as camera:
                 camera.hflip = True
                 camera.vflip = True
@@ -92,10 +92,10 @@ try:
                     stream.seek(0)
                     stream.truncate()
         	    # Write a length of 0 to the stream to signal that we are done
-        	    print('sending 0 to the connection!')
+                print('sending 0 to the connection!')
         	    thread.join()
                 connection.write(struct.pack('<L', 0))
-        	    print('stopping camera')
+                print('stopping camera')
                 camera.close()
 finally:
     print('in finally')
