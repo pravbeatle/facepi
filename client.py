@@ -25,7 +25,7 @@ def relay(delay):
     GPIO.output(output_port, GPIO.LOW)
 
 def result(connection, no_of_pics):
-    print(':::: Inside Result ::::') 
+    print(':::: Inside Result ::::')
     # Receive and process the result
     p = re.compile(r'\d+\.\d+')
     i = 0
@@ -41,7 +41,7 @@ def result(connection, no_of_pics):
                     relay(2)
  		print(prediction)
 		i += 1
-	   
+
 
 # Set up GPIO for LED/Relay
 GPIO.setmode(GPIO.BCM)
@@ -59,43 +59,43 @@ connection = client_socket.makefile('wb')
 # Create a thread for receiving the result
 thread = Thread(target=result, args=(connection, 1))
 try:
-    with picamera.PiCamera() as camera:
-        camera.hflip = True
-        camera.vflip = True
-        camera.resolution = (640, 460)
-        print('before motion detection')
+    while True:
         if pir.motion_detected:
-            print('motion detected')
-	    # Start the thread listenning for results
-	    thread.start()
-            # Start the camera and let it stabilize for 2 seconds
-            time.sleep(2)
+            with picamera.PiCamera() as camera:
+                camera.hflip = True
+                camera.vflip = True
+                camera.resolution = (640, 460)
+                print('before motion detection')
+                print('motion detected')
+                # Start the thread listenning for results
+                thread.start()
+                # Start the camera and let it stabilize for 2 seconds
+                time.sleep(2)
 
-            # Note the start time and construct a stream to hold image data temporarily
-            # (instead of direcrly writing to the connection, we first find out the size)
-            start = time.time()
-            stream = io.BytesIO()
-            print('about to capture')
-            for c in camera.capture_continuous(stream, 'jpeg'):
-                # Write the length of the capture to the stream and flush to
-                # ensure it was actually sent.
-                connection.write(struct.pack('<L', stream.tell()))
-                connection.flush()
-                # Rewind the stream and send the image data over the wire
-                stream.seek(0)
-                connection.write(stream.read())
-                # If we've been capturing for more than 30s then quit
-                if time.time() - start > 10:
-                    break
-                # Reset the stream for next capture
-                stream.seek(0)
-                stream.truncate()
-	    # Write a length of 0 to the stream to signal that we are done
-	    print('sending 0 to the connection!')
-	    thread.join()
-            connection.write(struct.pack('<L', 0))
-	    camera.stop_preview()
-	    print('stopping camera')
+                # Note the start time and construct a stream to hold image data temporarily
+                # (instead of direcrly writing to the connection, we first find out the size)
+                start = time.time()
+                stream = io.BytesIO()
+                print('about to capture')
+                for c in camera.capture_continuous(stream, 'jpeg'):
+                    # Write the length of the capture to the stream and flush to
+                    # ensure it was actually sent.
+                    connection.write(struct.pack('<L', stream.tell()))
+                    connection.flush()
+                    # Rewind the stream and send the image data over the wire
+                    stream.seek(0)
+                    connection.write(stream.read())
+                    # If we've been capturing for more than 30s then quit
+                    if time.time() - start > 10:
+                        break
+                    # Reset the stream for next capture
+                    stream.seek(0)
+                    stream.truncate()
+        	    # Write a length of 0 to the stream to signal that we are done
+        	    print('sending 0 to the connection!')
+        	    thread.join()
+                connection.write(struct.pack('<L', 0))
+        	    print('stopping camera')
 finally:
     print('in finally')
     connection.close()
