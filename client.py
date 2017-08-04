@@ -28,17 +28,20 @@ def result(connection):
     print(':::: Inside Result ::::')
     # Receive and process the result
     p = re.compile(r'\d+\.\d+')
-    while True:
-        if connection is not None:
-            result_len = struct.unpack('<L', connection.read(struct.calcsize('<L')))[0]
-            if not result_len:
-                continue
-            result_stream = connection.read(result_len)
-            print('RESULT FROM THE SERVER ::::  ', result_stream)
-            for prediction in p.findall(result_stream.split('===\n')[1]):
-                if float(prediction) >= 0.90:
-                    relay(10)
-                print(prediction)
+    try:
+        while True:
+            if connection is not None:
+                result_len = struct.unpack('<L', connection.read(struct.calcsize('<L')))[0]
+                if not result_len:
+                    continue
+                result_stream = connection.read(result_len)
+                print('RESULT FROM THE SERVER ::::  ', result_stream)
+                for prediction in p.findall(result_stream.split('===\n')[1]):
+                    if float(prediction) >= 0.90:
+                        relay(10)
+                    print(prediction)
+    finally:
+        print('result finally')
 
 # Set up GPIO for LED/Relay
 GPIO.setmode(GPIO.BCM)
