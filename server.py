@@ -5,6 +5,8 @@ from PIL import Image
 from datetime import datetime
 import subprocess
 import argparse
+from os import listdir
+from platform import system
 
 parser = argparse.ArgumentParser()
 parser.add_argument('-server_port', type=int, help='server port to connect the socket to')
@@ -24,7 +26,12 @@ try:
         # If the length is 0, then keep looping
         image_len = struct.unpack('<L', connection.read(struct.calcsize('<L')))[0]
         if not image_len:
-            # Delete the temp directory
+            # Delete the temp directory if not empty
+            files = listdir('./temp')
+            if system() == 'Darwin' and len(files) > 1:
+                subprocess.Popen("rm ./temp/*", shell=True)
+            elif system() == 'Linux' and len(files) == 0:
+                subprocess.Popen("rm ./temp/*", shell=True)
             continue
         # Construct a stream to hold the image data and read the image data from the connection
         image_stream = io.BytesIO()
