@@ -1,6 +1,8 @@
 # facepi
 facial detection door opener 
 
+Install Openface and dlib libraries under lib/ 
+
 <b>First</b>, do pose detection and alignment:  <br />
 ./lib/openface/util/align-dlib.py ./training-images/ align outerEyesAndNose ./aligned-images/ --size 96 <br />
 
