@@ -19,11 +19,17 @@ parser.add_argument('-relay_port', type=int, help='relay switch input port')
 args = parser.parse_args()
 # Set relay port
 output_port = getattr(args, 'relay_port') or 25
+# Status of NC as on aka closed
+relay_off = True
 
 def relay(delay):
+    # Set status of the relay as off(NC is open aka off)
+    relay_off = False
     GPIO.output(output_port, GPIO.HIGH)
     time.sleep(delay)
     GPIO.output(output_port, GPIO.LOW)
+    # Set status of the relay as on(NC is closed aka on)
+    relay_off = True
 
 def result():
     print(':::: Inside Result ::::')
@@ -38,8 +44,8 @@ def result():
                 result_stream = connection.read(result_len)
                 print('RESULT FROM THE SERVER ::::  ', result_stream)
                 for prediction in p.findall(result_stream.split('===\n')[1]):
-                    if float(prediction) >= 0.80:
-                        relay(5)
+                    if float(prediction) >= 0.80 and relay_off:
+                        relay(10)
                     print(prediction)
     finally:
         print('result finally')
@@ -65,7 +71,6 @@ try:
     # Thread start listening for eternity
     thread.start()
     while True:
-        i += 1
         if pir.motion_detected:
             print('Motion Detected!')
             with picamera.PiCamera() as camera:
@@ -73,7 +78,7 @@ try:
                 camera.vflip = True
                 camera.resolution = (640, 460)
                 # Start the camera and let it stabilize for 2 seconds
-		time.sleep(2)
+		        time.sleep(2)
                 # Note the start time and construct a stream to hold image data temporarily
                 # (instead of direcrly writing to the connection, we first find out the size)
                 start = time.time()
@@ -97,7 +102,6 @@ try:
                 print('sending 0 to the connection!')
                 connection.write(struct.pack('<L', 0))
                 print('stopping camera')
-		time.sleep(20)
 finally:
     print('in finally')
     connection.close()
