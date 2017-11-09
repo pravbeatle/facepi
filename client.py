@@ -10,6 +10,7 @@ import RPi.GPIO as GPIO
 from threading import Thread
 import re
 import argparse
+import dlib
 
 parser = argparse.ArgumentParser()
 parser.add_argument('-ip')
@@ -19,17 +20,26 @@ parser.add_argument('-relay_port', type=int, help='relay switch input port')
 args = parser.parse_args()
 # Set relay port
 output_port = getattr(args, 'relay_port') or 25
-# Status of NC as on aka closed
+# Status of NC when ON aka closed
 relay_off = True
 
+# Set up dlib's face detection 
+# HOG face detector 
+face_detector = dlib.get_frontal_face_detector()
+
+def find_face(image):
+    detected_faces = face_detector(image, 1)
+    return len(detected_faces) == 0 ? False : True
+
 def relay(delay):
-    # Set status of the relay as off(NC is open aka off)
+    # Set status of the relay when OFF(NC is open aka OFF)
     relay_off = False
     GPIO.output(output_port, GPIO.HIGH)
     time.sleep(delay)
     GPIO.output(output_port, GPIO.LOW)
-    # Set status of the relay as on(NC is closed aka on)
+    # Set status of the relay when ON(NC is closed aka ON)
     relay_off = True
+
 
 def result():
     print(':::: Inside Result ::::')
@@ -92,7 +102,7 @@ try:
                     # Rewind the stream and send the image data over the wire
                     stream.seek(0)
                     connection.write(stream.read())
-                    # If we've been capturing for more than 30s then quit
+                    # If we've been capturing for more than 10s then quit
                     if time.time() - start > 10:
                         break
                     # Reset the stream for next capture
