@@ -12,6 +12,7 @@ import re
 import argparse
 import dlib
 from PIL import Image
+import numpy as np
 
 parser = argparse.ArgumentParser()
 parser.add_argument('-ip')
@@ -21,8 +22,9 @@ parser.add_argument('-relay_port', type=int, help='relay switch input port')
 args = parser.parse_args()
 # Set relay port
 output_port = getattr(args, 'relay_port') or 25
+print(args.ip)
 # Check if processig data on server
-server_process = args.ip == None ? False : True
+server_process =  False if args.ip == None else True
 # Status of NC when ON aka closed
 relay_off = True
 # Set up dlib's face detection 
@@ -31,7 +33,7 @@ face_detector = dlib.get_frontal_face_detector()
 
 def find_face(image):
     detected_faces = face_detector(image, 1)
-    return len(detected_faces) == 0 ? False : True
+    return False if len(detected_faces) == 0 else True
 
 def relay(delay):
     # Set status of the relay when OFF(NC is open aka OFF)
@@ -112,7 +114,7 @@ try:
                 camera.vflip = True
                 camera.resolution = (640, 460)
                 # Start the camera and let it stabilize for 2 seconds
-		        time.sleep(2)
+		time.sleep(2)
                 # Note the start time and construct a stream to hold image data temporarily
                 # (instead of direcrly writing to the connection, we first find out the size)
                 start = time.time()
@@ -129,14 +131,17 @@ try:
                     stream.seek(0)
                     # Consctruct an image and find a face
                     image = Image.open(stream)
-                    if find_face(image):
+		    print(np.shape(image))
+		    image.save('./test.jpeg')
+		    if find_face(image):
                         relay(5)
                     stream.truncate()
 
                 if server_process:
-        	       end_stream(connection)
+        	    end_stream(connection)
                 print('stopping camera')
 finally:
     print('in finally')
-    connection.close()
-    client_socket.close()
+    if server_process:
+        connection.close()
+        client_socket.close()
