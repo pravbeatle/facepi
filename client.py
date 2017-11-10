@@ -145,14 +145,10 @@ try:
                         break
                     # Reset the stream for next capture
                     stream.seek(0)
-                    # Consctruct an image and find a face
-                    image = Image.open(stream)
-		    if find_face(np.array(image, dtype=np.uint8)):
-                        relay(5)
                     stream.truncate()
 
                 if server_process:
-        	    end_stream(connection)
+        	       end_stream(connection)
                 print('stopping camera')
 finally:
     print('in finally')
