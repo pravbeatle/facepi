@@ -75,7 +75,7 @@ def result_find_face():
                     continue
                 result_stream = connection.read(result_len)
                 print('RESULT FROM THE SERVER ::::  ', result_stream)
-                if result_stream and relay_off:
+                if bool(result_stream) and relay_off:
                     relay(5)
     finally:
         print('result finally')

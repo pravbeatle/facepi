@@ -65,10 +65,10 @@ try:
         result_output = find_face(image)
         print(':::: PRINTINT RESULT ::::', result_output)
         # Create result stream and write its length to connection
-        connection.write(struct.pack('<L', len(result_output)))
+        connection.write(struct.pack('<L', len(str(result_output))))
         connection.flush()
         # Rewind the stream and write its contents to the connection
-        connection.write(result_output)
+        connection.write(str(result_output))
         connection.flush()
 finally:
     connection.close()
