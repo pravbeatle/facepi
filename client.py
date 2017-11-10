@@ -26,9 +26,9 @@ output_port = getattr(args, 'relay_port') or 25
 server_process =  False if args.ip == None else True
 # Status of NC when ON aka closed
 relay_off = True
-# Set up dlib's face detection 
-# HOG face detector 
-face_detector = dlib.get_frontal_face_detector()
+# # Set up dlib's face detection 
+# # HOG face detector 
+# face_detector = dlib.get_frontal_face_detector()
 
 def find_face(image):
     detected_faces = face_detector(image, 1)
@@ -131,7 +131,6 @@ try:
                     stream.seek(0)
                     # Consctruct an image and find a face
                     image = Image.open(stream)
-		    image.save('./test.jpeg')
 		    if find_face(np.array(image, dtype=np.uint8)):
                         relay(5)
                     stream.truncate()

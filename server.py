@@ -7,6 +7,24 @@ import subprocess
 import argparse
 from os import listdir
 from platform import system
+import dlib
+import numpy as np
+
+# Set up dlib's face detection 
+# # HOG face detector 
+face_detector = dlib.get_frontal_face_detector()
+
+def find_person(image):
+    filename = datetime.now().strftime("%Y-%m-%d_%H.%M.%S.jpeg")
+    image.save('temp/' + filename)
+    result = subprocess.Popen("./lib/openface/demos/classifier.py infer {} ./generated-embeddings/classifier.pkl ./temp/{}".format("--multi", filename), stdout=subprocess.PIPE, shell=True)
+    return result.communicate()[0]
+
+def find_face(image):
+    detected_faces = face_detector(np.array(image, dtype=np.uint8), 1)
+    print('no of faces found :::: ', len(detected_faces))
+    return False if len(detected_faces) == 0 else True
+
 
 parser = argparse.ArgumentParser()
 parser.add_argument('-server_port', type=int, help='server port to connect the socket to')
@@ -43,11 +61,8 @@ try:
         image.verify()
         print('Image is verified')
         image = Image.open(image_stream)
-        filename = datetime.now().strftime("%Y-%m-%d_%H.%M.%S.jpeg")
-        image.save('temp/' + filename)
         ## Process the image
-        result = subprocess.Popen("./lib/openface/demos/classifier.py infer {} ./generated-embeddings/classifier.pkl ./temp/{}".format("--multi", filename), stdout=subprocess.PIPE, shell=True)
-        result_output = result.communicate()[0]
+        result_output = find_face(image)
         print(':::: PRINTINT RESULT ::::', result_output)
         # Create result stream and write its length to connection
         connection.write(struct.pack('<L', len(result_output)))
