@@ -64,6 +64,22 @@ def result():
     finally:
         print('result finally')
 
+def result_find_face():
+    print(':::: Inside Result ::::')
+    # Receive and process the result
+    try:
+        while True:
+            if connection is not None:
+                result_len = struct.unpack('<L', connection.read(struct.calcsize('<L')))[0]
+                if not result_len:
+                    continue
+                result_stream = connection.read(result_len)
+                print('RESULT FROM THE SERVER ::::  ', result_stream)
+                if result_stream and relay_off:
+                    relay(5)
+    finally:
+        print('result finally')
+
 def set_up_socket_connection():
     # Get hostname from command line arguement
     server_hostname = args.ip
@@ -75,7 +91,7 @@ def set_up_socket_connection():
     # Make a file-like object out of the connection
     connection = client_socket.makefile('wb')
     # Create thread for listening to result from the server
-    thread = Thread(target=result, args=())
+    thread = Thread(target=result_find_face, args=())
     thread.daemon = True
     # Thread start listening for eternity
     thread.start()
