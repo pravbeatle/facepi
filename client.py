@@ -22,7 +22,6 @@ parser.add_argument('-relay_port', type=int, help='relay switch input port')
 args = parser.parse_args()
 # Set relay port
 output_port = getattr(args, 'relay_port') or 25
-print(args.ip)
 # Check if processig data on server
 server_process =  False if args.ip == None else True
 # Status of NC when ON aka closed
@@ -33,6 +32,7 @@ face_detector = dlib.get_frontal_face_detector()
 
 def find_face(image):
     detected_faces = face_detector(image, 1)
+    print('no of faces found :::: ', len(detected_faces))
     return False if len(detected_faces) == 0 else True
 
 def relay(delay):
@@ -131,9 +131,8 @@ try:
                     stream.seek(0)
                     # Consctruct an image and find a face
                     image = Image.open(stream)
-		    print(np.shape(image))
 		    image.save('./test.jpeg')
-		    if find_face(image):
+		    if find_face(np.array(image, dtype=np.uint8)):
                         relay(5)
                     stream.truncate()
 
