@@ -10,7 +10,6 @@ import RPi.GPIO as GPIO
 from threading import Thread
 import re
 import argparse
-import dlib
 from PIL import Image
 import numpy as np
 
@@ -75,7 +74,7 @@ def result_find_face():
                     continue
                 result_stream = connection.read(result_len)
                 print('RESULT FROM THE SERVER ::::  ', result_stream)
-                if bool(result_stream) and relay_off:
+                if result_stream == 'True' and relay_off:
                     relay(5)
     finally:
         print('result finally')
