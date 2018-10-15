@@ -1,6 +1,8 @@
 # facepi
 facial detection door opener 
 
+![facepi](https://user-images.githubusercontent.com/5251742/46936311-b15cbd80-d07b-11e8-91c9-2deec44b0028.jpg)
+
 Install Openface and dlib libraries under lib/ 
 
 <b>First</b>, do pose detection and alignment:  <br />
